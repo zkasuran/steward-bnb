@@ -1,0 +1,7 @@
+/submit/
+node_modules/
+.env
+.env.*
+
+dist/
+*.tsbuildinfo

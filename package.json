@@ -1,0 +1,20 @@
+{
+  "name": "steward",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "The layer for owning a tokenized stock on BNB Smart Chain, not just buying one.",
+  "license": "LicenseRef-zkasuran-SAND-1.0",
+  "scripts": {
+    "smoke": "tsx src/chain/smoke.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "viem": "^2.21.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.2",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}
