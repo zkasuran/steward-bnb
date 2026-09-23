@@ -1,0 +1,25 @@
+{
+  "name": "@steward/sdk",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Steward core SDK: own-side tokenized-stock reader, ledger and pre-trade guard for BNB Smart Chain.",
+  "license": "LicenseRef-zkasuran-SAND-1.0",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "src"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "smoke": "tsx src/chain/smoke.ts"
+  },
+  "dependencies": {
+    "viem": "^2.21.0"
+  }
+}

@@ -1,16 +1,19 @@
 {
-  "name": "steward",
+  "name": "steward-suite",
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "description": "The layer for owning a tokenized stock on BNB Smart Chain, not just buying one.",
+  "description": "Steward: the layer for owning a tokenized stock on BNB Smart Chain, not just buying one.",
   "license": "LicenseRef-zkasuran-SAND-1.0",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
   "scripts": {
-    "smoke": "tsx src/chain/smoke.ts",
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "viem": "^2.21.0"
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "smoke": "npm run smoke -w @steward/sdk"
   },
   "devDependencies": {
     "@types/node": "^26.6.2",
