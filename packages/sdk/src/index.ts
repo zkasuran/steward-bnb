@@ -6,8 +6,11 @@ export * from "./chain/bstocks.js"
 export * from "./chain/constants.js"
 
 // Feature modules, namespaced to keep a clean, collision-free public surface:
-// market.*, ledger.*, lending.*, api.*
+// market.*, ledger.*, lending.*, api.*, guard.*, basket.*, providers.*
 export * as market from "./market/index.js"
 export * as ledger from "./ledger/index.js"
 export * as lending from "./lending/index.js"
 export * as api from "./api/index.js"
+export * as guard from "./guard/index.js"
+export * as basket from "./basket/index.js"
+export * as providers from "./providers/index.js"
