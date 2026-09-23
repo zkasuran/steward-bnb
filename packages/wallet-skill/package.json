@@ -1,0 +1,18 @@
+{
+  "name": "@steward/wallet-skill",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Steward Wallet Skill: a Binance Web3 Wallet skill that drives the guarded tokenized-stock flow through the Agentic Wallet.",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist", "SKILL.md", "LICENSE"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@steward/sdk": "*"
+  }
+}

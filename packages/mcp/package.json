@@ -1,0 +1,25 @@
+{
+  "name": "@steward/mcp",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Steward MCP server: exposes the read-only tokenized-stock tools (authenticity, ledger, guard, cross-provider) to any MCP client such as Cursor or Claude Code.",
+  "license": "LicenseRef-zkasuran-SAND-1.0",
+  "bin": {
+    "steward-mcp": "./dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "start": "node dist/cli.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@steward/sdk": "*",
+    "viem": "^2.21.0",
+    "zod": "^3.25.0"
+  }
+}

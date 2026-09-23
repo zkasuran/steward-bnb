@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+/*
+ * Steward dark theme. BNB Chain publishes three colours (brand yellow, near-black canvas,
+ * paper). The surface and ink scale plus the semantics are ours, because a dashboard that
+ * shows authenticity, drift and health factors needs green, red and amber that the brand
+ * does not define. Dark only: the front door to owning a tokenized stock reads as one
+ * calm surface, so a non-crypto-native user is not distracted by a theme switch.
+ */
+@theme {
+  --color-brand: #f0b90b;
+  --color-brand-dim: #b8890a;
+  --color-canvas: #0b0e11;
+
+  --color-panel: #141920;
+  --color-panel-2: #1c222b;
+  --color-line: #2b333d;
+  --color-line-soft: #212832;
+
+  --color-ink: #eef2f7;
+  --color-ink-soft: #c2ccd8;
+  --color-ink-dim: #8b97a6;
+  --color-ink-faint: #5a6472;
+
+  --color-up: #24b47e;
+  --color-down: #e4574c;
+  --color-warn: #e8a33d;
+  --color-info: #4a9fe0;
+  --color-unknown: #5a6472;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Every number a reader compares is tabular so columns line up and one changed digit
+   does not shift the row. */
+.num {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+}
+
+/* A value we do not know reads as unknown, never as a zero that looks measured. */
+.unknown {
+  color: var(--color-unknown);
+  font-variant-numeric: tabular-nums;
+}
+
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-brand) 40%, transparent);
+}
+
+/* Thin, quiet scrollbars so a long ledger or transfer list does not shout. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line) transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
