@@ -3,12 +3,14 @@ import type { Address } from "viem"
 
 export const BSC_CHAIN_ID = 56
 
-// PublicNode is fine for single reads; its terms forbid bulk scraping, so bulk and
-// historical reads go to the dataseed tier instead.
+// Endpoint tiers. PublicNode is fine for single or targeted reads (its terms forbid bulk scraping).
+// The dataseed `bulk` tier is fast for state reads but REJECTS eth_getLogs, so log and history scans go
+// to the `logs` tier: drpc serves getLogs for <=10000-block ranges free, publicnode is the fallback.
 export const RPC_ENDPOINTS = {
   primary: "https://bsc-rpc.publicnode.com",
-  fallbacks: ["https://bsc-dataseed.binance.org", "https://binance.llamarpc.com"],
+  fallbacks: ["https://bsc-dataseed.binance.org", "https://bsc-dataseed1.bnbchain.org"],
   bulk: "https://bsc-dataseed.bnbchain.org",
+  logs: ["https://bsc.drpc.org", "https://bsc-rpc.publicnode.com"],
 } as const
 
 // Every genuine bStocks token is a beacon proxy pointing at this one shared beacon.
