@@ -1,0 +1,46 @@
+# NOTICE
+
+Steward (the Steward suite) is copyright 2026 zkasuran. The suite is licensed under
+`LicenseRef-zkasuran-SAND-1.0` (see `LICENSE`), except `@steward/wallet-skill`, which is MIT (see
+`packages/wallet-skill/LICENSE`).
+
+This product bundles or depends on third-party software listed below. Each keeps its own licence. The
+licence value for each was read from that package's own `package.json` in `node_modules`, not guessed.
+MIT, ISC and Apache-2.0 all require their licence text and copyright notice to travel with the
+software, so this file records them.
+
+## Runtime dependencies
+
+| Package | Version | Licence | Used by |
+| --- | --- | --- | --- |
+| viem | 2.56.8 | MIT | sdk, mcp, agent, web |
+| @modelcontextprotocol/sdk | 1.30.1 | MIT | mcp |
+| zod | 3.25.76 | MIT | mcp |
+| next | 16.3.4 | MIT | web |
+| react | 19.2.8 | MIT | web |
+| react-dom | 19.2.8 | MIT | web |
+| lucide-react | 0.544.0 | ISC | web |
+| clsx | 2.1.1 | MIT | web |
+| tailwind-merge | 3.3.1 | MIT | web |
+
+## Development dependencies
+
+| Package | Version | Licence | Used by |
+| --- | --- | --- | --- |
+| typescript | 5.9.3 | Apache-2.0 | workspace |
+| tsx | 4.23.15 | MIT | workspace (build and test) |
+| @types/node | 26.6.2 | MIT | workspace |
+| tailwindcss | 4.1.13 | MIT | web (build only) |
+| @tailwindcss/postcss | 4.1.13 | MIT | web (build only) |
+| postcss | 8.5.28 | MIT | web (build only) |
+| @types/react | 19.1.12 | MIT | web |
+| @types/react-dom | 19.1.9 | MIT | web |
+
+## Licence texts
+
+- MIT: https://opensource.org/license/mit
+- ISC: https://opensource.org/license/isc-license-txt
+- Apache-2.0: https://www.apache.org/licenses/LICENSE-2.0
+
+Full licence text for each dependency ships in its own directory under `node_modules/<package>` after
+`npm install`.

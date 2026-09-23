@@ -1,0 +1,65 @@
+{
+  "suite": "steward-suite",
+  "description": "Steward: the own-side layer for owning a tokenized stock on BNB Smart Chain.",
+  "generated": "2026-09-24",
+  "chain": "BNB Smart Chain (chain id 56)",
+  "note": "Every Steward package below is our own source and our own build (lineage 'own'). Third-party npm packages are runtime or dev dependencies, not forks of their source and they keep their own licences (see NOTICE). No published artifact wraps another author's compiled binary, so binary_wrap is 0.",
+  "lineageStates": {
+    "own": "our source, our build",
+    "source_fork": "built from another author's source under a licence permitting it",
+    "binary_wrap": "another author's compiled binary plus our bytes (not publishable)"
+  },
+  "packages": [
+    {
+      "name": "@steward/sdk",
+      "path": "packages/sdk",
+      "lineage": "own",
+      "license": "LicenseRef-zkasuran-SAND-1.0",
+      "build": "tsc",
+      "description": "Typed core: on-chain reader, ledger, guard and basket math, Web3ApiClient interface with a keyless mock adapter."
+    },
+    {
+      "name": "@steward/mcp",
+      "path": "packages/mcp",
+      "lineage": "own",
+      "license": "LicenseRef-zkasuran-SAND-1.0",
+      "build": "tsc",
+      "description": "MCP server exposing the read-only tokenized-stock tools over @steward/sdk."
+    },
+    {
+      "name": "@steward/agent",
+      "path": "packages/agent",
+      "lineage": "own",
+      "license": "LicenseRef-zkasuran-SAND-1.0",
+      "build": "tsc",
+      "description": "Agent Studio agent (Leash and Paycheck): ERC-8004 identity, ERC-8183 job model and b402 self-funding, unsigned transaction builders only."
+    },
+    {
+      "name": "@steward/wallet-skill",
+      "path": "packages/wallet-skill",
+      "lineage": "own",
+      "license": "MIT",
+      "build": "tsc",
+      "description": "Binance Web3 Wallet skill routing four natural-language intents to the SDK. MIT for adoption into the skills hub."
+    },
+    {
+      "name": "@steward/web",
+      "path": "apps/web",
+      "lineage": "own",
+      "license": "LicenseRef-zkasuran-SAND-1.0",
+      "build": "next build",
+      "description": "Next.js dashboard over live BSC reads: Know, Grow, Use and Compare."
+    }
+  ],
+  "thirdParty": {
+    "relationship": "dependency",
+    "note": "Listed in NOTICE with the licence read from each package's own package.json. None is forked or vendored into Steward source.",
+    "runtime": ["viem", "@modelcontextprotocol/sdk", "zod", "next", "react", "react-dom", "lucide-react", "clsx", "tailwind-merge"],
+    "development": ["typescript", "tsx", "@types/node", "tailwindcss", "@tailwindcss/postcss", "postcss", "@types/react", "@types/react-dom"]
+  },
+  "summary": {
+    "own": 5,
+    "source_fork": 0,
+    "binary_wrap": 0
+  }
+}

@@ -12,7 +12,7 @@
   "scripts": {
     "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present",
+    "test": "node --import tsx --test \"packages/*/src/**/*.test.ts\"",
     "smoke": "npm run smoke -w @steward/sdk"
   },
   "devDependencies": {
