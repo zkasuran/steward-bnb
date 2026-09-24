@@ -35,6 +35,7 @@ export function GrowPanel({ address, setAddress }: { address: string; setAddress
       <Card>
         <CardTitle
           title="Conviction baskets"
+          eyebrow="Grow"
           icon={<Layers className="h-5 w-5" />}
           sub="A basket is a thesis expressed as target weights over genuine bStocks. Pick one, then analyse it against a wallet to see how far the real holding has drifted and what a rebalance would do."
         />
@@ -46,13 +47,15 @@ export function GrowPanel({ address, setAddress }: { address: string; setAddress
               key={b.id}
               type="button"
               onClick={() => setSelected(b.id)}
-              className={`rounded-md border p-3 text-left transition-colors ${
-                b.id === activeId ? "border-brand bg-brand/5" : "border-line-soft bg-panel-2 hover:border-line"
+              className={`rounded-lg border p-3.5 text-left transition duration-200 ${
+                b.id === activeId
+                  ? "border-brand bg-brand/10 shadow-[var(--shadow-1)]"
+                  : "border-line-soft bg-panel-2 hover:-translate-y-0.5 hover:border-line hover:shadow-[var(--shadow-1)]"
               }`}
               aria-pressed={b.id === activeId}
             >
               <div className="text-sm font-semibold text-ink">{b.name}</div>
-              <div className="mt-1 flex flex-wrap gap-1">
+              <div className="mt-2 flex flex-wrap gap-1">
                 {b.weights.map((w) => (
                   <span key={w.ticker} className="num rounded bg-canvas/60 px-1.5 py-0.5 text-xs text-ink-dim">
                     {w.ticker} {fmtWeight(w.weight)}
@@ -84,7 +87,7 @@ function AnalysisView({ data }: { data: AnalyzeResponse }) {
   const scaleMax = Math.max(1, ...data.legs.map((l) => Math.abs(l.driftPct)))
   return (
     <>
-      <Card>
+      <Card className="rise">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <CardTitle title={data.name} icon={<Scale className="h-5 w-5" />} />
           <SourceTag chainId={data.chainId} atBlock={data.atBlock} />

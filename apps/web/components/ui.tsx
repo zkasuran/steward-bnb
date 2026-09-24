@@ -5,23 +5,57 @@ import { ExternalLink } from "lucide-react"
 import { cn } from "@/lib/cn"
 import { bscScanAddress, bscScanToken, bscScanTx, bscScanBlock, shortAddr, BSC_CHAIN_NAME } from "@/lib/format"
 
-export function Card({ children, className }: { children: ReactNode; className?: string }) {
+// The shared surface. Elevated by default with a soft hover lift so every panel that renders in one
+// reads as the same system. The shadow colour tracks the theme through the --shadow-* variables, so
+// it stays right in light and dark. Pass hover={false} for a card that should sit flat.
+export function Card({
+  children,
+  className,
+  hover = true,
+}: {
+  children: ReactNode
+  className?: string
+  hover?: boolean
+}) {
   return (
-    <section className={cn("rounded-lg border border-line bg-panel p-5", className)}>{children}</section>
+    <section
+      className={cn(
+        "elevate-1 rounded-lg border border-line bg-panel p-5 transition duration-200 md:p-6",
+        hover && "hover:-translate-y-0.5 hover:shadow-[var(--shadow-2)]",
+        className,
+      )}
+    >
+      {children}
+    </section>
   )
 }
 
 export function Eyebrow({ children }: { children: ReactNode }) {
-  return <div className="text-xs font-semibold uppercase tracking-wider text-ink-dim">{children}</div>
+  return <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-dim">{children}</div>
 }
 
-export function CardTitle({ title, sub, icon }: { title: string; sub?: string; icon?: ReactNode }) {
+export function CardTitle({
+  title,
+  sub,
+  icon,
+  eyebrow,
+}: {
+  title: string
+  sub?: string
+  icon?: ReactNode
+  eyebrow?: string
+}) {
   return (
-    <div className="mb-4 flex items-start gap-3">
-      {icon ? <div className="mt-0.5 text-brand">{icon}</div> : null}
-      <div>
-        <h2 className="text-lg font-semibold text-ink">{title}</h2>
-        {sub ? <p className="mt-1 text-sm leading-relaxed text-ink-dim">{sub}</p> : null}
+    <div className="mb-5 flex items-start gap-3">
+      {icon ? (
+        <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-line bg-panel-2 text-brand">
+          {icon}
+        </div>
+      ) : null}
+      <div className="min-w-0">
+        {eyebrow ? <Eyebrow>{eyebrow}</Eyebrow> : null}
+        <h2 className={cn("text-lg font-semibold tracking-tight text-ink md:text-xl", eyebrow && "mt-1")}>{title}</h2>
+        {sub ? <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-ink-dim">{sub}</p> : null}
       </div>
     </div>
   )
@@ -114,10 +148,10 @@ export function Stat({
   const color =
     tone === "up" ? "text-up" : tone === "down" ? "text-down" : tone === "warn" ? "text-warn" : "text-ink"
   return (
-    <div className="rounded-md border border-line-soft bg-panel-2 px-3 py-2.5">
-      <div className="text-xs text-ink-dim">{label}</div>
-      <div className={cn("num mt-1 text-lg font-semibold", color)}>{value}</div>
-      {sub ? <div className="mt-0.5 text-xs text-ink-faint">{sub}</div> : null}
+    <div className="rounded-lg border border-line-soft bg-panel-2 px-3.5 py-3 transition-colors hover:border-line">
+      <div className="text-[11px] font-medium uppercase tracking-wide text-ink-dim">{label}</div>
+      <div className={cn("num mt-1 text-xl font-semibold tracking-tight", color)}>{value}</div>
+      {sub ? <div className="mt-1 text-xs text-ink-faint">{sub}</div> : null}
     </div>
   )
 }

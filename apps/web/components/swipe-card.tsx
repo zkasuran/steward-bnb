@@ -25,6 +25,7 @@ export function SwipeCard() {
     <Card>
       <CardTitle
         title="Swipe"
+        eyebrow="Use · Borrow safely"
         icon={<HandCoins className="h-5 w-5" />}
         sub="Spend against a holding without selling it. Supply a bStock as collateral on Venus and draw USDT. This is spot collateralised borrowing, not a perp and not margin: you keep the stock and repay to release it."
       />
@@ -66,7 +67,7 @@ export function SwipeCard() {
         <button
           type="button"
           onClick={quote}
-          className="rounded-md border border-brand bg-brand px-4 py-2 text-sm font-medium text-canvas hover:bg-brand-dim"
+          className="rounded-md border border-brand bg-brand px-4 py-2 text-sm font-semibold text-on-brand transition-colors hover:bg-brand-dim"
         >
           Quote borrow
         </button>
@@ -86,7 +87,7 @@ export function SwipeCard() {
 function SwipeQuote({ data }: { data: SwipeResponse }) {
   const m = data.market
   return (
-    <div className="mt-4">
+    <div className="rise mt-4">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <span className="flex items-center gap-2 text-sm text-ink-soft">
           {m.symbol}

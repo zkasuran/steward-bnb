@@ -10,6 +10,7 @@ import { AddressField } from "./address-field"
 import { LedgerView } from "./know-ledger"
 import { AddrLink, Badge, Card, CardTitle, EmptyNote, ErrorNote, Loading, MockTag, SourceTag } from "./ui"
 import { fmtNum, fmtUsd } from "@/lib/format"
+import { cn } from "@/lib/cn"
 import type { HoldingDTO, HoldingsResponse } from "@/lib/types"
 
 export function KnowPanel({ address, setAddress }: { address: string; setAddress: (v: string) => void }) {
@@ -21,6 +22,7 @@ export function KnowPanel({ address, setAddress }: { address: string; setAddress
       <Card>
         <CardTitle
           title="Fine Print"
+          eyebrow="Know"
           icon={<FileText className="h-5 w-5" />}
           sub="Enter a wallet. Steward resolves every token by its on-chain beacon, never by symbol, so a scam look-alike cannot pass as the real thing. You see what you actually own in plain English."
         />
@@ -46,7 +48,7 @@ export function KnowPanel({ address, setAddress }: { address: string; setAddress
 function Holdings({ data, address }: { data: HoldingsResponse; address: string }) {
   const held = data.holdings.filter((h) => Number(h.balanceHuman) > 0)
   return (
-    <Card>
+    <Card className="rise">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div className="text-sm text-ink-soft">
           Holder <AddrLink address={data.holder} />
@@ -91,7 +93,12 @@ function HoldingCard({ h, address }: { h: HoldingDTO; address: string }) {
   const [open, setOpen] = useState(false)
   const hasBalance = Number(h.balanceHuman) > 0
   return (
-    <div className="rounded-md border border-line-soft bg-panel-2 p-4">
+    <div
+      className={cn(
+        "rise rounded-lg border bg-panel-2 p-4 transition-colors",
+        h.genuine ? "border-up/25 hover:border-up/40" : "border-down/25 hover:border-down/40",
+      )}
+    >
       <div className="flex items-start justify-between gap-2">
         <div>
           <div className="flex items-center gap-2">

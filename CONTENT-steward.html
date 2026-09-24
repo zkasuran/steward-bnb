@@ -1,0 +1,91 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Steward content pack</title>
+<style>
+:root{--y:#14F195;--bg:#0B0E11;--panel:#15191E;--line:#252B33;--fg:#E9EDF2;--dim:#8B97A6;--ok:#1FA97A}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 ui-sans-serif,system-ui,sans-serif;padding:28px 20px 80px}
+main{max-width:920px;margin:0 auto}h1{font-size:22px;margin:0 0 4px}h1 b{color:var(--y)}.sub{color:var(--dim);margin:0 0 22px}
+.b{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--y);border-radius:10px;padding:14px 16px;margin:0 0 16px}
+.hd{display:flex;align-items:baseline;gap:10px;margin-bottom:8px}.hd b{font-size:15px}.t{color:var(--dim);font-size:12px;border:1px solid var(--line);border-radius:20px;padding:1px 9px}
+.v{display:flex;gap:8px;align-items:flex-start}pre{margin:0;flex:1;background:#0E1216;border:1px solid var(--line);border-radius:8px;padding:10px 12px;white-space:pre-wrap;word-break:break-word;font:13px/1.55 ui-monospace,Menlo,monospace;color:var(--fg);max-height:520px;overflow:auto}
+button{background:var(--y);color:#161A1E;border:0;border-radius:8px;padding:9px 14px;font-weight:700;cursor:pointer;white-space:nowrap}button.done{background:var(--ok);color:#fff}
+.cc{color:var(--dim);font-size:12px;margin-top:6px}.cc.over{color:#E4574C}.note{color:var(--dim);font-size:13px;margin-top:8px}
+</style>
+<main>
+<h1><b>Steward</b> content pack</h1>
+<p class="sub">The four content-cadence blocks for Steward (BNB Hack: Tokenized Stocks Edition), each with its own copy button. Inside: the title, the build-journey article plus a formatting map, the 5:2 banner prompt with its negative prompt and overlay lines, then the announce post. Every number here matches what shipped. No private data on this page.</p>
+
+<div class="b"><div class="hd"><b>1. Title</b><span class="t">under 70 chars</span></div>
+<div class="v"><pre data-limit="70">Own-side tooling for tokenized stocks on BNB Smart Chain</pre><button>copy</button></div></div>
+
+<div class="b"><div class="hd"><b>2. Build-journey article</b><span class="t">house style</span></div>
+<div class="v"><pre>Most tokenized-stock tools stop at the buy button. Steward starts where they stop.
+
+We built Steward for the BNB Hack: Tokenized Stocks Edition to answer one plain question. Once you own a tokenized stock on BNB Smart Chain, what do you actually hold? And what does it take to look after it? The whole field is buy-side. Steward is own-side.
+
+What it does
+
+Steward has four parts over one typed core.
+
+Know shows the truth about a holding. It resolves every bStocks token by its beacon, never by its symbol, because the bStocks symbol is heavily squatted by scam clones on BSC. A genuine bStocks token is a beacon proxy that points at the shared beacon 0x156d6DCe9A4F6139a3406F1f021F1A4880dE93A3. Anything else is rejected before it costs you. Know then reconstructs your true cost basis and position from Transfer history, both realized and unrealized. It surfaces dividend income and catches the silent rebase that moves a balance on a dividend or a split.
+
+Grow turns a conviction into a rule. A thematic basket like AI chips is a rule over genuine bStocks, with drift detection and a rebalance plan. Execution stays a separate guarded step.
+
+Use lets you live off a position without selling it. A pre-trade guard folds authenticity, premium-to-NAV, pool depth, slippage and US market hours into one verdict: allow, warn, resize or block. Swipe borrows USDT against a bStocks position on Venus, spot collateral, not a perp. This part is real, not a mock. Genuine bStocks are listed Venus collateral. We verified TSLAB, NVDAB, SPCXB and SKHYB as live markets on chain.
+
+Compare puts the same underlying side by side across bStocks, Ondo and xStocks. It is read-only and states plainly what we measured: bStocks has deep PancakeSwap liquidity, Ondo is thin and xStocks is dust, so a cross-provider DEX arbitrage is not executable on today's BSC liquidity. We would rather say that than promise a trade that will not fill.
+
+The suite
+
+Under the four parts sits one real suite. @steward/sdk is the typed core, with eight modules: chain, market, ledger, lending, guard, basket, providers and api. An MCP server exposes eight read-only tools to any MCP client like Cursor or Claude Code. A Next 16 dashboard is the front door for someone who is not crypto-native, four tabs over seven API routes that read BSC live. A Wallet Skill routes natural-language intents to the SDK and returns a verdict plus safe parameters. It ships MIT so the Binance skills hub can adopt it. An Agent Studio agent carries an ERC-8004 identity against the Identity Registry 0x8004A169FB4a3325136EB29fA0ceB6D2e539a432 and builds unsigned transactions only. 37 unit tests cover the pure logic, all green.
+
+Both stack specials are load-bearing, not decoration. The Wallet Skill earns Best Use of Agentic Wallet / Wallet Skills. The Agent Studio agent earns Best Use of BNB Agent Studio.
+
+What is live, what is honest
+
+Steward is built to be honest about what a judge can run today. Every on-chain read is live and free: authenticity by beacon, the position ledger from Transfer history, PancakeSwap v3 price, depth and slippage, the Venus reads behind Swipe and the cross-provider comparison. No key, no gas. The dashboard runs on these today at https://bnb-tokenized-stocks.vercel.app , where NVDAB reads about $225 on a roughly $1.5M PancakeSwap pool.
+
+We are just as plain about the edges. The Binance Web3 API, the source of the reference price and the corporate-action feed, sits behind a clean interface with a keyless mock adapter, so premium-to-NAV is approximate until the API key session wires the live client. Live trades and on-chain deploys need BNB for gas, so the SDK and the agent build unsigned transactions and stop at the signing line. ERC-8183 is a draft with no deployed contract on BSC, so the agent's job model follows the draft shape and says so. Payout and any deploy route through the house wallet 0xDB6c6340342e71A63cD11Ebac2185204b7777777.
+
+Spot only. No perps, no margin loops.
+
+Check it yourself
+
+Live dashboard: https://bnb-tokenized-stocks.vercel.app
+bStocks beacon: 0x156d6DCe9A4F6139a3406F1f021F1A4880dE93A3
+ERC-8004 Identity Registry: 0x8004A169FB4a3325136EB29fA0ceB6D2e539a432
+Venus collateral markets: TSLAB, NVDAB, SPCXB, SKHYB
+Repository: github.com/zkasuran/steward-bnb
+
+AI (Claude, Anthropic) was used to build Steward. The design, the on-chain verification and the review are ours. Every on-chain fact here was read from BSC mainnet before we relied on it.</pre><button>copy</button></div></div>
+
+<div class="b"><div class="hd"><b>3. Formatting map</b><span class="t">for the editor</span></div>
+<div class="v"><pre>Formatting map for the X Articles editor. It takes plain text, so apply structure by hand.
+
+Title (H1): Own-side tooling for tokenized stocks on BNB Smart Chain
+Section headings (H2): What it does / The suite / What is live, what is honest / Check it yourself
+Bold these figures: eight modules, eight read-only tools, four tabs, seven API routes, 37 unit tests, about $225, roughly $1.5M
+Link or monospace these: the dashboard URL, the beacon address, the Identity Registry address, the Venus tickers, the repository URL
+Cover image: use the 5:2 banner from block 4, then place the two overlay lines from blocks 6 and 7 in a vector tool.</pre><button>copy</button></div></div>
+
+<div class="b"><div class="hd"><b>4. Banner prompt</b><span class="t">5:2, render 3000x1200</span></div>
+<div class="v"><pre>A wide 5:2 technical banner at 3000x1200 pixels. A dark charcoal field, near-black, around hex 0d0f13. Across it runs a calm lattice of thin geometric lines with rounded rectangular nodes, suggesting a ledger and a verification grid. The lattice glows in BNB yellow, hex F0B90B, with warm amber accents and a soft golden bloom. One larger node reads as an authenticated shield, a rounded hexagon brighter than the rest. The mood is quiet and premium with generous empty space through the center for text added later. Flat vector style, subtle depth, soft shadow, a faint film grain. Keep the palette strictly dark charcoal plus BNB yellow and amber, no other colors. High detail, crisp edges, even lighting.</pre><button>copy</button></div></div>
+
+<div class="b"><div class="hd"><b>5. Banner negative prompt</b><span class="t">negative</span></div>
+<div class="v"><pre>no text, no letters, no numbers, no words, no logos, no watermark, no signature, no UI screenshots, no candlestick charts, no photorealistic people, no faces, no hands, no stock photos, no clutter, no rainbow colors, no blue, no green, no red, no heavy blur across the whole frame.</pre><button>copy</button></div></div>
+
+<div class="b"><div class="hd"><b>6. Overlay text, line 1</b><span class="t">place in vector tool</span></div>
+<div class="v"><pre>Steward</pre><button>copy</button></div></div>
+
+<div class="b"><div class="hd"><b>7. Overlay text, line 2</b><span class="t">place in vector tool</span></div>
+<div class="v"><pre>Own the tokenized stock, not just the trade.</pre><button>copy</button></div></div>
+
+<div class="b"><div class="hd"><b>8. Announce post</b><span class="t">@BNBCHAIN @BinanceWallet</span></div>
+<div class="v"><pre data-limit="280">Steward is the own-side layer for tokenized stocks on BNB Smart Chain. Know what you truly own, catch scam clones by beacon, borrow on Venus without selling, compare across issuers. Live and spot-only. https://bnb-tokenized-stocks.vercel.app @BNBCHAIN @BinanceWallet</pre><button>copy</button></div></div>
+</main>
+<script>
+document.querySelectorAll('.v').forEach(v=>{const b=v.querySelector('button'),p=v.querySelector('pre');if(!b||!p)return;
+b.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(p.textContent)}catch(e){const r=document.createRange();r.selectNodeContents(p);const s=getSelection();s.removeAllRanges();s.addRange(r);document.execCommand('copy');s.removeAllRanges()}
+const t=b.textContent;b.textContent='copied';b.classList.add('done');setTimeout(()=>{b.textContent=t;b.classList.remove('done')},1200)})});
+document.querySelectorAll('pre[data-limit]').forEach(p=>{const lim=+p.dataset.limit,n=p.textContent.length;const el=document.createElement('div');el.className='cc'+(n>lim?' over':'');el.textContent=n+' / '+lim+' characters';p.parentElement.parentElement.appendChild(el)});
+</script>

@@ -67,6 +67,9 @@ export async function GET(request: Request): Promise<Response> {
       chunkSize: 9000n,
       resolveTimestamps: true,
       priceFn,
+      // A keyed logs RPC (set STEWARD_LOGS_RPC in the host env) makes the full history scan reliable
+      // from a cloud IP. Unset, it falls back to the SDK's public log tier (publicnode first).
+      rpcUrl: process.env.STEWARD_LOGS_RPC,
     })
 
     const dp = pl.decimals
@@ -126,6 +129,10 @@ export async function GET(request: Request): Promise<Response> {
     }
     return Response.json(body)
   } catch (e) {
-    return errorJson(e instanceof Error ? e.message : String(e), 502)
+    const msg = e instanceof Error ? e.message : String(e)
+    const hint = msg.includes("getLogs")
+      ? "The free log RPC declined this historical scan. Public BSC endpoints rate-limit eth_getLogs from cloud IPs, so the full transaction-history ledger needs a keyed logs endpoint (set STEWARD_LOGS_RPC in the host env). Token authenticity and the live balance still read fine in Fine Print, and a smaller lookback often succeeds."
+      : msg
+    return errorJson(hint, 502)
   }
 }

@@ -1,86 +1,234 @@
 @import "tailwindcss";
 
 /*
- * Steward dark theme. BNB Chain publishes three colours (brand yellow, near-black canvas,
- * paper). The surface and ink scale plus the semantics are ours, because a dashboard that
- * shows authenticity, drift and health factors needs green, red and amber that the brand
- * does not define. Dark only: the front door to owning a tokenized stock reads as one
- * calm surface, so a non-crypto-native user is not distracted by a theme switch.
+ * Steward theme system. Two selected palettes, light and dark, each stepped for its own
+ * surface (never an automatic flip). BNB brand yellow #F0B90B is the accent in both. Every
+ * colour utility (bg-panel, text-ink, text-up, ...) points at a runtime variable, so swapping
+ * the [data-theme] scope on <html> repaints the whole app without a dark: on every element.
+ * Contrast was validated with the data-viz palette script: body and status text clears WCAG
+ * AA on the surface it sits on in both modes, and chart fills clear the 3:1 graphical bar.
  */
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* Colour tokens map to raw --* variables (inline = the utility references --brand directly,
+   so the theme scope's value wins). */
+@theme inline {
+  --color-brand: var(--brand);
+  --color-brand-dim: var(--brand-dim);
+  --color-on-brand: var(--on-brand);
+  --color-accent: var(--accent);
+
+  --color-canvas: var(--canvas);
+  --color-panel: var(--panel);
+  --color-panel-2: var(--panel-2);
+  --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
+
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-dim: var(--ink-dim);
+  --color-ink-faint: var(--ink-faint);
+
+  --color-up: var(--up);
+  --color-down: var(--down);
+  --color-warn: var(--warn);
+  --color-info: var(--info);
+  --color-unknown: var(--unknown);
+
+  --color-chart-safe: var(--chart-safe);
+  --color-chart-warn: var(--chart-warn);
+  --color-chart-danger: var(--chart-danger);
+  --color-chart-buy: var(--chart-buy);
+}
+
+/* Non-colour tokens are the same in both themes, so they stay literal. --font-mono is emitted
+   here (not inline) because .num reads var(--font-mono) directly. */
 @theme {
-  --color-brand: #f0b90b;
-  --color-brand-dim: #b8890a;
-  --color-canvas: #0b0e11;
-
-  --color-panel: #141920;
-  --color-panel-2: #1c222b;
-  --color-line: #2b333d;
-  --color-line-soft: #212832;
-
-  --color-ink: #eef2f7;
-  --color-ink-soft: #c2ccd8;
-  --color-ink-dim: #8b97a6;
-  --color-ink-faint: #5a6472;
-
-  --color-up: #24b47e;
-  --color-down: #e4574c;
-  --color-warn: #e8a33d;
-  --color-info: #4a9fe0;
-  --color-unknown: #5a6472;
-
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
+  --radius-xl: 22px;
 
-  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 }
 
-:root {
+/* Light is the :root default so an un-scripted first paint is still coherent; the no-flash
+   script sets [data-theme] before paint from localStorage or prefers-color-scheme. */
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+
+  --brand: #f0b90b;
+  --brand-dim: #d9a50a;
+  --on-brand: #1c1400;
+  --accent: #9a6b00;
+
+  --canvas: #f4f6f8;
+  --panel: #ffffff;
+  --panel-2: #f1f4f7;
+  --line: #dde3ea;
+  --line-soft: #eaeef3;
+
+  --ink: #0d1116;
+  --ink-soft: #384250;
+  --ink-dim: #55606e;
+  --ink-faint: #646e7b;
+
+  --up: #0a7d4f;
+  --down: #c62f2f;
+  --warn: #8a5a00;
+  --info: #1668b0;
+  --unknown: #646e7b;
+
+  --chart-safe: #0f9d63;
+  --chart-warn: #b57500;
+  --chart-danger: #dc3b3b;
+  --chart-buy: #2a78d6;
+
+  --shadow-1: 0 1px 2px rgba(16, 24, 40, 0.04), 0 6px 16px rgba(16, 24, 40, 0.06);
+  --shadow-2: 0 8px 30px rgba(16, 24, 40, 0.10);
+  --glow: color-mix(in srgb, var(--brand) 26%, transparent);
+  --grid-line: rgba(16, 24, 40, 0.04);
+}
+/* APPEND-DARK */
+[data-theme="dark"] {
   color-scheme: dark;
+
+  --brand: #f0b90b;
+  --brand-dim: #b8890a;
+  --on-brand: #17130a;
+  --accent: #f0b90b;
+
+  --canvas: #0b0e11;
+  --panel: #141a21;
+  --panel-2: #1c232c;
+  --line: #2b333d;
+  --line-soft: #232b34;
+
+  --ink: #eef2f7;
+  --ink-soft: #c2ccd8;
+  --ink-dim: #8b97a6;
+  --ink-faint: #828d9a;
+
+  --up: #2fbf83;
+  --down: #ef6b62;
+  --warn: #e8a33d;
+  --info: #56a8e6;
+  --unknown: #828d9a;
+
+  --chart-safe: #2fbf83;
+  --chart-warn: #eaa63f;
+  --chart-danger: #ef6b62;
+  --chart-buy: #56a8e6;
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-2: 0 10px 40px rgba(0, 0, 0, 0.5);
+  --glow: color-mix(in srgb, var(--brand) 22%, transparent);
+  --grid-line: rgba(255, 255, 255, 0.05);
+}
+/* APPEND-BASE */
+html {
+  scroll-behavior: smooth;
 }
 
 html,
 body {
-  background: var(--color-canvas);
-  color: var(--color-ink);
+  background: var(--canvas);
+  color: var(--ink);
   margin: 0;
+  min-height: 100%;
   -webkit-font-smoothing: antialiased;
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  text-rendering: optimizeLegibility;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
 }
 
-/* Every number a reader compares is tabular so columns line up and one changed digit
-   does not shift the row. */
+/* Numbers a reader compares are tabular so columns line up and one changed digit does not
+   shift the row. Large standalone figures keep proportional widths (see .figure). */
 .num {
   font-variant-numeric: tabular-nums;
   font-family: var(--font-mono);
 }
 
+/* A hero or stat value: the system sans at display size, proportional figures so 111 does not
+   read loose, tight tracking. */
+.figure {
+  font-variant-numeric: proportional-nums;
+  letter-spacing: -0.02em;
+}
+
 /* A value we do not know reads as unknown, never as a zero that looks measured. */
 .unknown {
-  color: var(--color-unknown);
+  color: var(--unknown);
   font-variant-numeric: tabular-nums;
 }
 
 :where(a, button, input, select, textarea, [tabindex]):focus-visible {
-  outline: 2px solid var(--color-brand);
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
+  border-radius: 4px;
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--color-brand) 40%, transparent);
+  background: color-mix(in srgb, var(--brand) 40%, transparent);
+  color: var(--ink);
 }
 
-/* Thin, quiet scrollbars so a long ledger or transfer list does not shout. */
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-line) transparent;
+  scrollbar-color: var(--line) transparent;
+}
+
+/* Card elevation, theme-aware. Kept as hand-written classes so the shadow colour tracks the
+   theme (Tailwind's shadow utilities do not). */
+.elevate-1 {
+  box-shadow: var(--shadow-1);
+}
+.elevate-2 {
+  box-shadow: var(--shadow-2);
+}
+
+/* The one bright element on the page: a soft brand pool behind the hero. Pure CSS, no image,
+   so there is no asset licence to carry. */
+.hero-glow {
+  position: absolute;
+  inset: -20% -10% auto -10%;
+  height: 460px;
+  background:
+    radial-gradient(60% 70% at 18% 0%, var(--glow), transparent 70%),
+    radial-gradient(50% 60% at 90% 10%, color-mix(in srgb, var(--info) 14%, transparent), transparent 72%);
+  filter: blur(6px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.live-dot {
+  animation: stw-pulse 2s ease-in-out infinite;
+}
+
+.rise {
+  animation: stw-rise 0.4s ease-out both;
+}
+
+@keyframes stw-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.82); }
+}
+
+@keyframes stw-rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
 }

@@ -6,6 +6,7 @@
 // route handlers, so the browser never touches an RPC. The address is shared by KNOW and GROW.
 import { useState } from "react"
 import { Eye, Sprout, Wallet, GitCompareArrows } from "lucide-react"
+import { Hero } from "@/components/hero"
 import { KnowPanel } from "@/components/know-panel"
 import { GrowPanel } from "@/components/grow-panel"
 import { UsePanel } from "@/components/use-panel"
@@ -26,21 +27,10 @@ export default function Home() {
   const [address, setAddress] = useState("")
 
   return (
-    <main className="mx-auto min-h-screen max-w-5xl px-4 pb-20 pt-8 md:px-6">
-      <header className="mb-6">
-        <div className="flex items-center gap-2">
-          <span className="inline-block h-3 w-3 rounded-sm bg-brand" aria-hidden />
-          <span className="text-2xl font-semibold tracking-tight text-ink">Steward</span>
-          <span className="rounded-md border border-line px-2 py-0.5 text-xs text-ink-dim">BNB Smart Chain</span>
-        </div>
-        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-soft">
-          Every other tool helps you buy a tokenized stock. Steward is the whole life of the holding: know
-          what you truly own, grow it on your convictions and use it, all on real BSC mainnet reads. Own-side,
-          not buy-side.
-        </p>
-      </header>
+    <main className="mx-auto min-h-screen max-w-5xl overflow-x-clip px-4 pb-20 pt-6 md:px-6">
+      <Hero />
 
-      <nav className="mb-6 grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Sections">
+      <nav className="mb-6 grid grid-cols-2 gap-2.5 sm:grid-cols-4" aria-label="Sections">
         {TABS.map((t) => {
           const active = t.key === tab
           return (
@@ -50,13 +40,26 @@ export default function Home() {
               onClick={() => setTab(t.key)}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex items-start gap-2 rounded-lg border p-3 text-left transition-colors",
-                active ? "border-brand bg-brand/10" : "border-line bg-panel hover:border-line-soft",
+                "group flex items-start gap-2.5 rounded-lg border p-3.5 text-left transition duration-200",
+                active
+                  ? "border-brand bg-brand/10 shadow-[var(--shadow-1)]"
+                  : "border-line bg-panel hover:-translate-y-0.5 hover:shadow-[var(--shadow-1)]",
               )}
             >
-              <t.Icon className={cn("mt-0.5 h-5 w-5 shrink-0", active ? "text-brand" : "text-ink-dim")} aria-hidden />
-              <span>
-                <span className={cn("block text-sm font-semibold", active ? "text-ink" : "text-ink-soft")}>{t.label}</span>
+              <span
+                className={cn(
+                  "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md border transition-colors",
+                  active
+                    ? "border-brand/40 bg-brand/15 text-brand"
+                    : "border-line-soft bg-panel-2 text-ink-dim group-hover:text-ink-soft",
+                )}
+              >
+                <t.Icon className="h-5 w-5" aria-hidden />
+              </span>
+              <span className="min-w-0">
+                <span className={cn("block text-sm font-semibold", active ? "text-ink" : "text-ink-soft")}>
+                  {t.label}
+                </span>
                 <span className="block text-xs text-ink-faint">{t.hint}</span>
               </span>
             </button>
@@ -64,10 +67,13 @@ export default function Home() {
         })}
       </nav>
 
-      {tab === "know" ? <KnowPanel address={address} setAddress={setAddress} /> : null}
-      {tab === "grow" ? <GrowPanel address={address} setAddress={setAddress} /> : null}
-      {tab === "use" ? <UsePanel /> : null}
-      {tab === "compare" ? <ComparePanel /> : null}
+      {/* Keyed by tab so switching sections replays the .rise entrance. */}
+      <div key={tab} className="rise">
+        {tab === "know" ? <KnowPanel address={address} setAddress={setAddress} /> : null}
+        {tab === "grow" ? <GrowPanel address={address} setAddress={setAddress} /> : null}
+        {tab === "use" ? <UsePanel /> : null}
+        {tab === "compare" ? <ComparePanel /> : null}
+      </div>
 
       <footer className="mt-12 border-t border-line pt-6 text-xs leading-relaxed text-ink-faint">
         <p>

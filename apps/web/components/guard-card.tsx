@@ -31,6 +31,7 @@ export function GuardCard() {
     <Card>
       <CardTitle
         title="Guard"
+        eyebrow="Use · Guard a buy"
         icon={<ShieldCheck className="h-5 w-5" />}
         sub="A pre-trade gate. It checks the token is genuine, the price against the reference, the pool depth for your size and whether the US market is open, then says allow, warn, resize or block with reasons in plain English."
       />
@@ -62,7 +63,7 @@ export function GuardCard() {
         <button
           type="button"
           onClick={assess}
-          className="rounded-md border border-brand bg-brand px-4 py-2 text-sm font-medium text-canvas hover:bg-brand-dim"
+          className="rounded-md border border-brand bg-brand px-4 py-2 text-sm font-semibold text-on-brand transition-colors hover:bg-brand-dim"
         >
           Assess trade
         </button>
@@ -82,8 +83,8 @@ export function GuardCard() {
 function GuardVerdict({ data }: { data: GuardResponse }) {
   const v = VERDICT[data.action]
   return (
-    <div className="mt-4">
-      <div className={`flex items-center gap-3 rounded-md border p-4 ${toneBox(v.tone)}`}>
+    <div className="rise mt-4">
+      <div className={`flex items-center gap-3 rounded-lg border p-4 ${toneBox(v.tone)}`}>
         <v.Icon className="h-6 w-6 shrink-0" aria-hidden />
         <div>
           <div className="text-base font-semibold">{v.label}</div>

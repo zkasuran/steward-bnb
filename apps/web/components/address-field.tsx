@@ -52,7 +52,7 @@ export function AddressField({
           className={cn(
             "rounded-md border px-4 py-2 text-sm font-medium transition-colors",
             valid
-              ? "border-brand bg-brand text-canvas hover:bg-brand-dim"
+              ? "border-brand bg-brand text-on-brand hover:bg-brand-dim"
               : "cursor-not-allowed border-line bg-panel-2 text-ink-faint",
           )}
         >

@@ -4,32 +4,74 @@
 // surfaces the dividend/split rebase that changed the balance with no transfer (the "you were not
 // hacked" moment) and values the live balance from the pool. Cost basis needs a historical price
 // feed and says so rather than faking a number.
-import { useCallback, useEffect, useState } from "react"
+//
+// The Transfer-log scan runs CLIENT-SIDE, in the judge's browser. Free BSC log RPCs serve
+// eth_getLogs from a residential IP but reject it from Vercel's cloud IPs, so reading in the
+// browser is what makes the ledger and its "you were not hacked" moment work on the live deploy.
+// The server route stays in place and is tried only as a secondary attempt, which pays off when the
+// host has a keyed logs RPC configured.
+import { useCallback, useEffect, useRef, useState } from "react"
 import { ShieldCheck, ArrowDownLeft, ArrowUpRight } from "lucide-react"
-import { useEndpoint } from "./use-endpoint"
 import { AddrLink, Badge, ErrorNote, KeyVal, Loading, SourceTag, Stat } from "./ui"
 import { fmtNum, fmtUsd, fmtTimestamp } from "@/lib/format"
 import type { LedgerResponse } from "@/lib/types"
+import { buildLedgerInBrowser, type LedgerScan } from "@/lib/ledger-client"
 
-const DEPTHS: { key: string; label: string; qs: string }[] = [
-  { key: "recent", label: "Recent (~120k blocks)", qs: "lookback=120000" },
-  { key: "deeper", label: "Deeper (~500k blocks)", qs: "lookback=500000" },
-  { key: "full", label: "Full history (slow)", qs: "fromBlock=0" },
+const DEPTHS: { key: string; label: string; scan: LedgerScan; qs: string }[] = [
+  { key: "recent", label: "Recent (~120k blocks)", scan: { lookback: 120000 }, qs: "lookback=120000" },
+  { key: "deeper", label: "Deeper (~500k blocks)", scan: { lookback: 500000 }, qs: "lookback=500000" },
+  { key: "full", label: "Full history (slow)", scan: { fromBlock: 0 }, qs: "fromBlock=0" },
 ]
 
+const FAIL_HINT =
+  "The browser could not finish this scan against the public BSC log RPC. A smaller scan depth often succeeds, and a keyed logs RPC would remove the limit entirely. Token authenticity and the live balance still read fine in Fine Print above."
+
 export function LedgerView({ address, token, symbol }: { address: string; token: string; symbol: string }) {
-  const { data, error, loading, call } = useEndpoint<LedgerResponse>()
+  const [data, setData] = useState<LedgerResponse | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
   const [depth, setDepth] = useState(DEPTHS[0])
+  // Guards against an older read landing after a newer one (a fast retype or depth flip).
+  const seq = useRef(0)
 
   const load = useCallback(
-    (qs: string) => {
-      call(`/api/know/ledger?address=${address}&token=${token}&${qs}`)
+    async (d: (typeof DEPTHS)[number]) => {
+      const id = ++seq.current
+      setLoading(true)
+      setError(null)
+      try {
+        // Primary path: reconstruct from Transfer logs in the browser, off the visitor's own IP.
+        const res = await buildLedgerInBrowser(address, token, d.scan)
+        if (id !== seq.current) return
+        setData(res)
+      } catch {
+        if (id !== seq.current) return
+        // Secondary attempt: the server route. It only adds anything when the host has a keyed logs
+        // RPC set, since a plain cloud IP is exactly what the browser read works around.
+        try {
+          const r = await fetch(`/api/know/ledger?address=${address}&token=${token}&${d.qs}`, { cache: "no-store" })
+          const json = await r.json()
+          if (id !== seq.current) return
+          if (!r.ok || (json && typeof json === "object" && "error" in json)) {
+            setError(FAIL_HINT)
+            setData(null)
+          } else {
+            setData(json as LedgerResponse)
+          }
+        } catch {
+          if (id !== seq.current) return
+          setError(FAIL_HINT)
+          setData(null)
+        }
+      } finally {
+        if (id === seq.current) setLoading(false)
+      }
     },
-    [address, token, call],
+    [address, token],
   )
 
   useEffect(() => {
-    load(depth.qs)
+    load(depth)
   }, [load, depth])
 
   return (

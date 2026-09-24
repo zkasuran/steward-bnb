@@ -10,7 +10,7 @@ export const RPC_ENDPOINTS = {
   primary: "https://bsc-rpc.publicnode.com",
   fallbacks: ["https://bsc-dataseed.binance.org", "https://bsc-dataseed1.bnbchain.org"],
   bulk: "https://bsc-dataseed.bnbchain.org",
-  logs: ["https://bsc.drpc.org", "https://bsc-rpc.publicnode.com"],
+  logs: ["https://bsc-rpc.publicnode.com", "https://bsc.drpc.org"],
 } as const
 
 // Every genuine bStocks token is a beacon proxy pointing at this one shared beacon.

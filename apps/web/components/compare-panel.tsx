@@ -39,6 +39,7 @@ export function ComparePanel() {
       <Card>
         <CardTitle
           title="Cross-Provider comparison"
+          eyebrow="Compare"
           icon={<GitCompareArrows className="h-5 w-5" />}
           sub="One equity, three tokenized-stock families on BSC: bStocks, Ondo and xStocks. Authenticity is checked live for each and priced from a real pool where one exists."
         />
@@ -51,8 +52,10 @@ export function ComparePanel() {
               type="button"
               onClick={() => setSelected(u)}
               aria-pressed={u === active}
-              className={`num rounded-md border px-3 py-1.5 text-sm transition-colors ${
-                u === active ? "border-brand bg-brand/10 text-brand" : "border-line bg-panel-2 text-ink-soft hover:border-line"
+              className={`num rounded-md border px-3 py-1.5 text-sm font-medium transition duration-200 ${
+                u === active
+                  ? "border-brand bg-brand/10 text-brand shadow-[var(--shadow-1)]"
+                  : "border-line bg-panel-2 text-ink-soft hover:-translate-y-0.5 hover:border-line hover:text-ink"
               }`}
             >
               {u}
@@ -78,7 +81,7 @@ export function ComparePanel() {
 
 function CompareView({ data }: { data: CompareResponse }) {
   return (
-    <Card>
+    <Card className="rise">
       <div className="mb-3 flex items-center justify-between gap-2">
         <h2 className="text-lg font-semibold text-ink">{data.underlying} across families</h2>
         <Badge tone="scam">
