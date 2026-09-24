@@ -18,7 +18,8 @@ import type { LedgerResponse } from "@/lib/types"
 import { buildLedgerInBrowser, type LedgerScan } from "@/lib/ledger-client"
 
 const DEPTHS: { key: string; label: string; scan: LedgerScan; qs: string }[] = [
-  { key: "recent", label: "Recent (~120k blocks)", scan: { lookback: 120000 }, qs: "lookback=120000" },
+  { key: "recent", label: "Recent (~16k blocks)", scan: { lookback: 16000 }, qs: "lookback=16000" },
+  { key: "day", label: "~1 day (120k)", scan: { lookback: 120000 }, qs: "lookback=120000" },
   { key: "deeper", label: "Deeper (~500k blocks)", scan: { lookback: 500000 }, qs: "lookback=500000" },
   { key: "full", label: "Full history (slow)", scan: { fromBlock: 0 }, qs: "fromBlock=0" },
 ]

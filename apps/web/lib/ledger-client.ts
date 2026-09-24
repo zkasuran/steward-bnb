@@ -16,7 +16,7 @@ import type { CorporateActionDTO, LedgerResponse, TransferDTO } from "@/lib/type
 // this one CORS-open endpoint rather than falling to a dataseed node the browser may not reach.
 const LOGS_RPC = "https://bsc-rpc.publicnode.com"
 
-const DEFAULT_LOOKBACK = 120_000n // ~1 day of BSC blocks; a gentle default the user can widen
+const DEFAULT_LOOKBACK = 24_000n // recent window (~20h of BSC) that reliably clears public-RPC getLogs
 const MAX_LOOKBACK = 6_000_000n
 const USDT_DECIMALS = 18
 
@@ -68,7 +68,7 @@ export async function buildLedgerInBrowser(
   const pl = await ledger.buildPositionLedger(client, holder as Address, token as Address, {
     fromBlock,
     toBlock: head,
-    chunkSize: 9000n,
+    chunkSize: 8000n,
     resolveTimestamps: true,
     priceFn,
     logClient: client,
