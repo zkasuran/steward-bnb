@@ -18,10 +18,27 @@ export interface HoldingDTO {
   balanceRaw: string
   totalSupplyHuman: string
   plainWhatYouOwn: string
-  // Reference price and value are from the keyless mock feed until the Web3 API key is wired.
-  refPriceMock: number | null
-  refValueMock: number | null
+  // Reference (NAV) price per underlying share, from the Binance RWA feed when the key is set and
+  // the feed covers this ticker, else the labelled mock fixture. Null when the live feed does not
+  // list the ticker (never fabricated).
+  refPrice: number | null
+  tokenToShareRatio: number | null
+  // Value in share terms: balance * refPrice * tokenToShareRatio. Null when no reference.
+  refValue: number | null
+  // False when the live RWA feed does not cover this ticker. referenceNote says why.
+  referenceAvailable: boolean
+  referenceNote: string | null
+  refSource: string | null
+  refAsOf: number | null
+  // On-chain DEX price per token and the value it implies, shown when the reference is unavailable
+  // so the holding still carries a number, clearly marked as on-chain and not a reference.
+  onchainPrice: number | null
+  onchainValue: number | null
 }
+
+// "live" once the Web3 API key is set and the reconciled RWA feed is driving the reference,
+// "mock" while the keyless fixture stands in. Drives the reference label in the UI.
+export type ReferenceMode = "live" | "mock"
 
 export interface HoldingsResponse {
   chainId: number
@@ -29,7 +46,7 @@ export interface HoldingsResponse {
   holder: string
   holdings: HoldingDTO[]
   flagged: HoldingDTO[]
-  referenceIsMock: true
+  referenceMode: ReferenceMode
 }
 
 // --- KNOW: True-Position Ledger ---
@@ -137,7 +154,7 @@ export interface GuardResponse {
   symbol: string | null
   usdtIn: number
   atBlock: number | null
-  referenceIsMock: true
+  referenceMode: ReferenceMode
   authenticity: { genuine: boolean; method: string }
   premium: {
     spotUsdtPerToken: number
@@ -146,6 +163,7 @@ export interface GuardResponse {
     fairUsdtPerToken: number
     premiumPct: number
     source?: string
+    asOf?: number
   } | null
   premiumError?: string
   depth: {

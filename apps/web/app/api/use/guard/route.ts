@@ -1,9 +1,11 @@
 // USE / Guard: the pre-trade gate. One token plus a USDT size folds into one verdict
 // (allow / warn / resize / block) with plain reasons a non-crypto user can act on. It checks
 // authenticity by beacon, premium to the reference price, depth and slippage from the pool, plus
-// US market hours. The reference price comes from the keyless mock feed, labelled, until the key
-// is wired. Reads only, no signing, no send, no spend.
-import { guard, api } from "@steward/sdk"
+// US market hours. The reference price comes from the live Binance RWA feed when the Web3 API key
+// is set (reconciled to the feed's own token address). It uses the labelled mock otherwise. When the
+// feed does not cover the token the premium check is skipped, not faked. Reads only, no signing.
+import { guard } from "@steward/sdk"
+import { createReferenceClient } from "@/lib/reference"
 import { BSC_CHAIN_ID } from "@/lib/format"
 import { parseAddress, errorJson } from "@/lib/sdk-server"
 import type { GuardResponse } from "@/lib/types"
@@ -20,7 +22,8 @@ export async function GET(request: Request): Promise<Response> {
   if (!Number.isFinite(usdtIn) || usdtIn <= 0) return errorJson("Pass a positive ?usdtIn= size in USDT")
 
   try {
-    const verdict = await guard.guardTrade({ token, usdtIn, api: new api.MockWeb3ApiClient() })
+    const { client, mode } = createReferenceClient()
+    const verdict = await guard.guardTrade({ token, usdtIn, api: client })
     const d = verdict.details
 
     const body: GuardResponse = {
@@ -31,7 +34,7 @@ export async function GET(request: Request): Promise<Response> {
       symbol: d.symbol ?? null,
       usdtIn: d.usdtIn,
       atBlock: d.atBlock ?? null,
-      referenceIsMock: true,
+      referenceMode: mode,
       authenticity: d.authenticity,
       premium: d.premium
         ? {
@@ -41,6 +44,7 @@ export async function GET(request: Request): Promise<Response> {
             fairUsdtPerToken: d.premium.fairUsdtPerToken,
             premiumPct: d.premium.premiumPct,
             source: d.premium.source,
+            asOf: d.premium.asOf,
           }
         : null,
       premiumError: d.premiumError,

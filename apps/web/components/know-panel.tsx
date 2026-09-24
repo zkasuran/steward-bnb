@@ -8,7 +8,7 @@ import { ShieldCheck, ShieldAlert, ScrollText, FileText } from "lucide-react"
 import { useEndpoint } from "./use-endpoint"
 import { AddressField } from "./address-field"
 import { LedgerView } from "./know-ledger"
-import { AddrLink, Badge, Card, CardTitle, EmptyNote, ErrorNote, Loading, MockTag, SourceTag } from "./ui"
+import { AddrLink, Badge, Card, CardTitle, EmptyNote, ErrorNote, Loading, LiveTag, MockTag, SourceTag } from "./ui"
 import { fmtNum, fmtUsd } from "@/lib/format"
 import { cn } from "@/lib/cn"
 import type { HoldingDTO, HoldingsResponse } from "@/lib/types"
@@ -54,7 +54,7 @@ function Holdings({ data, address }: { data: HoldingsResponse; address: string }
           Holder <AddrLink address={data.holder} />
         </div>
         <div className="flex items-center gap-2">
-          <MockTag what="value" />
+          {data.referenceMode === "live" ? <LiveTag what="value" source="binance-web3" /> : <MockTag what="value" />}
           <SourceTag chainId={data.chainId} atBlock={data.atBlock} />
         </div>
       </div>
@@ -120,12 +120,24 @@ function HoldingCard({ h, address }: { h: HoldingDTO; address: string }) {
 
       <div className="mt-3 flex items-baseline justify-between">
         <span className="num text-2xl font-semibold text-ink">{fmtNum(Number(h.balanceHuman))}</span>
-        {h.genuine && h.refValueMock != null ? (
-          <span className="num text-sm text-ink-dim">{fmtUsd(h.refValueMock)}</span>
+        {h.genuine && h.refValue != null ? (
+          <span className="num text-sm text-ink-dim" title={h.refSource ?? undefined}>
+            {fmtUsd(h.refValue)}
+          </span>
+        ) : h.genuine && h.onchainValue != null ? (
+          <span className="num text-sm text-ink-dim" title="On-chain price. No reference in the RWA feed.">
+            {fmtUsd(h.onchainValue)} <span className="text-ink-faint">on-chain</span>
+          </span>
         ) : null}
       </div>
 
       <p className="mt-2 text-sm leading-relaxed text-ink-soft">{h.plainWhatYouOwn}</p>
+
+      {h.genuine && !h.referenceAvailable ? (
+        <p className="mt-2 text-xs text-ink-faint">
+          {h.referenceNote ?? "No reference price available for this ticker in the RWA feed."}
+        </p>
+      ) : null}
 
       <div className="mt-3 flex items-center justify-between text-xs">
         <AddrLink address={h.address} kind="token" />

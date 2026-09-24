@@ -2,11 +2,11 @@
 
 // USE / Guard: the pre-trade gate. Pick a token and a USDT size, get one verdict with plain
 // reasons. Authenticity is on-chain, depth and slippage are from the pool, the reference price is
-// the labelled mock until the key is wired.
+// the live Binance RWA feed when the key is set and the labelled mock otherwise.
 import { useState } from "react"
 import { CheckCircle2, AlertTriangle, Scale, ShieldX, ShieldCheck } from "lucide-react"
 import { useEndpoint } from "./use-endpoint"
-import { AddrLink, Badge, Card, CardTitle, ErrorNote, KeyVal, Loading, MockTag, SourceTag } from "./ui"
+import { AddrLink, Badge, Card, CardTitle, ErrorNote, KeyVal, Loading, LiveTag, MockTag, SourceTag } from "./ui"
 import { KNOWN_BSTOCKS, SCAM_CLONE } from "@/lib/known"
 import { fmtUsd, fmtPct, fmtNum } from "@/lib/format"
 import type { GuardResponse } from "@/lib/types"
@@ -123,12 +123,19 @@ function GuardVerdict({ data }: { data: GuardResponse }) {
         <div className="rounded-md border border-line-soft bg-panel-2 px-4 py-1">
           <div className="flex items-center justify-between py-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-ink-dim">Premium to reference</span>
-            <MockTag />
+            {data.referenceMode === "live" ? (
+              <LiveTag source={data.premium?.source} asOf={data.premium?.asOf} />
+            ) : (
+              <MockTag />
+            )}
           </div>
           {data.premium ? (
             <>
               <KeyVal k="On-chain spot" v={fmtUsd(data.premium.spotUsdtPerToken)} />
-              <KeyVal k="Reference (mock)" v={fmtUsd(data.premium.referencePrice)} />
+              <KeyVal
+                k={data.referenceMode === "live" ? "Reference (live)" : "Reference (mock)"}
+                v={fmtUsd(data.premium.referencePrice)}
+              />
               <KeyVal k="Fair per token" v={fmtUsd(data.premium.fairUsdtPerToken)} />
               <KeyVal
                 k="Premium"

@@ -134,6 +134,27 @@ export function MockTag({ what = "reference price" }: { what?: string }) {
   )
 }
 
+// Shown once the live key is wired: the reference is the real Binance RWA feed, with its source and
+// the time the price was quoted so a reader can see it is fresh, not a fixture.
+export function LiveTag({
+  what = "reference price",
+  source,
+  asOf,
+}: {
+  what?: string
+  source?: string | null
+  asOf?: number | null
+}) {
+  const src = source && source.startsWith("binance-web3") ? "Binance RWA" : source
+  const when = asOf && Number.isFinite(asOf) ? `${new Date(asOf).toISOString().slice(11, 19)} UTC` : null
+  return (
+    <Badge tone="genuine" className="font-normal">
+      {what}: live{src ? ` · ${src}` : ""}
+      {when ? ` · ${when}` : ""}
+    </Badge>
+  )
+}
+
 export function Stat({
   label,
   value,

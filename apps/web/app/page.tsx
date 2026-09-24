@@ -78,8 +78,9 @@ export default function Home() {
       <footer className="mt-12 border-t border-line pt-6 text-xs leading-relaxed text-ink-faint">
         <p>
           Reads only. Nothing here signs, sends or spends. Rebalance and borrow are plan-only quotes; execution
-          is a separate guarded step behind a wallet. Reference price and value are a keyless mock until the
-          Web3 API key is wired. Every mock value is labelled.
+          is a separate guarded step behind a wallet. Reference price and value come live from the Binance RWA
+          feed where the Web3 API key is set, a labelled mock otherwise. Every reference is labelled live or
+          mock. A ticker the feed does not list falls back to the on-chain price, marked.
         </p>
         <p className="mt-2">
           Not affiliated with, endorsed by or partnered with BNB Chain or Binance. Spot only, no perps. Source
