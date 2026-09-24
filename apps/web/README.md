@@ -1,11 +1,15 @@
 # @steward/web
 
-The Steward dashboard. A Next.js app, the non-crypto-native front door to owning a tokenized stock on
+The Steward dashboard. A Next.js 16 app, the non-crypto-native front door to owning a tokenized stock on
 BNB Chain. Four tabs over the whole life of a holding: Know the truth, Grow on convictions, Use it
-safely and Compare it across providers.
+safely and Compare it across providers. Light and dark, with a header toggle that persists.
 
-Every panel reads BSC mainnet through server route handlers, so the browser never touches an RPC. The
-reads are live and free. Rebalance and borrow are plan-only quotes. Reference price and portfolio
+**Live: https://bnb-tokenized-stocks.vercel.app**
+
+Most panels read BSC mainnet through server route handlers, so the browser never touches an RPC. The
+True-Position Ledger is the exception: it reads Transfer logs client-side, off the visitor's own IP,
+because free public BSC RPCs serve eth_getLogs from a residential IP but rate-limit it from a cloud IP.
+The reads are live and free. Rebalance and borrow are plan-only quotes. Reference price and portfolio
 value are a keyless mock until the Web3 API key is wired. Every mock value is labelled.
 
 ## Run
