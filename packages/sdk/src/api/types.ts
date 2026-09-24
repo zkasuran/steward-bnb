@@ -1,41 +1,64 @@
 // Typed request/response shapes for the Binance Web3 API surface Steward touches.
 //
-// UNVERIFIED. Every field name here is reconstructed from the roost rival README hints in
-// .hq/MEMORY.md, not from a Binance doc page, so the DevEx time-to-first-call clock (25%,
-// once-only) stays honest. Each name the human must confirm carries a `// VERIFY in clocked
-// session` marker. Nothing in this file calls Binance.
+// VERIFIED 2026-09-24 against the live API. Doc root: https://web3.binance.com/en/dev-docs .
+// The abstract *Request / *Response interfaces are Steward's own stable contract (what the SDK
+// modules and the MockWeb3ApiClient use). The raw `*Raw` / `OC*` interfaces are the real
+// on-the-wire shapes the HttpWeb3ApiClient maps FROM. Measured shapes, latencies and verbatim
+// errors are in .hq/api-verification.json. Where our old guess differed from reality it is noted
+// inline as MATCHED / DIFFERED so the mapping is auditable.
 import type { Address, Hex } from "viem"
 
 // --- shared envelope + errors -------------------------------------------------
-// roost hint: the API returns HTTP 200 even on failure, with the real status in a body
-// `code`, so a real client inspects `code`, never just the HTTP status.
-export interface ApiError {
-  code: string | number // VERIFY in clocked session
-  msg?: string // VERIFY in clocked session
-}
-
+// VERIFIED. Every endpoint returns this envelope. Business errors come back with HTTP 200 and a
+// non-zero `code`; gateway auth/signature/timestamp/rate-limit errors come back with the real HTTP
+// status (401/403/429) AND this envelope. Success is `code === 0`. Guessed {code,msg,data} matched;
+// the real envelope also carries `timestamp` and `success`.
 export interface ApiEnvelope<T> {
-  code: string | number // "0" / 0 on success  // VERIFY in clocked session
+  code: number
   msg?: string
-  data?: T
+  data?: T | null
+  timestamp?: number // ms epoch, server time
+  success?: boolean // convenience flag, mirrors code === 0
+}
+export type OCResult<T> = ApiEnvelope<T>
+
+export interface ApiError {
+  code: number
+  msg?: string
+  httpStatus?: number
 }
 
 // --- RWA Data -----------------------------------------------------------------
+// getReferencePrice -> GET /api/v1/dex/market/rwa/price (VERIFIED). Query param is
+// `tokenContractAddresses` (PLURAL, comma-separated). Pass `tokenContractAddress` to address a token
+// directly, else the Http client resolves `symbol` via the bStocks candidate map.
 export interface ReferencePriceRequest {
   symbol: string
-  binanceChainId?: number // chain param is `binanceChainId`, not `chainId`  // VERIFY in clocked session
+  tokenContractAddress?: Address // preferred; rwa/price is keyed by address, not symbol  // VERIFIED
+  binanceChainId?: string // STRING, e.g. "56". Guessed number, real is string.  // VERIFIED
 }
 
-// roost hint: reference price is DERIVED so that
-// tokenPrice / (referencePrice * tokenToShareRatio) == 1.000 for every listed token, so it is
-// a screening signal, not a tradeable spread. Real spread comes from a Trading quote.
-// tokenToShareRatio is load-bearing: a 10:1 token misreads as a 900% spread if ignored.
+// Abstract shape the guard/holdings modules read. The Http client maps the real rwa/price row
+// {tokenPrice, referencePrice, tokenPriceUpdatedAt} onto this.
+// API invariant (VERIFIED): tokenPrice == referencePrice * tokenToShareRatio, so the ratio is
+// derived as tokenPrice / referencePrice when rwa/price does not return it directly.
 export interface ReferencePriceResponse {
   symbol: string
-  referencePrice: string // decimal string  // VERIFY in clocked session
-  tokenToShareRatio: string // e.g. "1" or "10"  // VERIFY in clocked session
-  asOf: number // ms epoch  // VERIFY in clocked session
+  referencePrice: string // decimal string  // MATCHED -> rwa/price.referencePrice
+  tokenToShareRatio: string // "1" or "1.000224983929808861"  // DIFFERED -> derived or from rwa/tokens
+  asOf: number // ms epoch  // DIFFERED -> rwa/price.tokenPriceUpdatedAt
+  tokenPrice?: string // on-chain per-token price  // VERIFIED -> rwa/price.tokenPrice
   source?: string
+}
+
+// Raw rwa/price row (VERIFIED live shape).
+export interface RwaPriceRowRaw {
+  binanceChainId: string
+  tokenContractAddress: string
+  platformId: string // "bstock" | "ondo"
+  tokenPrice: string
+  referencePrice: string
+  tokenPriceUpdatedAt: number // ms epoch
 }
 
 export type CorporateActionType =
@@ -43,67 +66,125 @@ export type CorporateActionType =
   | "split"
   | "reverse_split"
   | "rebase"
-  | "delisting" // VERIFY in clocked session
+  | "delisting"
 
 export interface CorporateAction {
   type: CorporateActionType
   symbol: string
   token?: Address
-  exDate?: number // ms epoch  // VERIFY in clocked session
-  payDate?: number // ms epoch  // VERIFY in clocked session
-  ratio?: string // splits: "2" = 2-for-1, decimal string  // VERIFY in clocked session
-  cashPerShare?: string // dividends, decimal string  // VERIFY in clocked session
+  exDate?: number // ms epoch
+  payDate?: number // ms epoch
+  ratio?: string // splits: "2" = 2-for-1, decimal string
+  cashPerShare?: string // dividends, decimal string
   currency?: string
   note?: string
 }
 
+// getCorporateActions -> DIFFERED. There is NO dedicated corporate-actions endpoint (VERIFIED).
+// Dividends are derived from rwa/underlying-market.marketData.latestDividend / dividendYield; splits
+// and rebases are detected on-chain by the ledger module. The Http client synthesizes a dividend
+// action from the latest-dividend field and otherwise returns an empty list.
 export interface CorporateActionsRequest {
   symbol?: string
   token?: Address
-  since?: number // ms epoch  // VERIFY in clocked session
-  binanceChainId?: number // VERIFY in clocked session
+  tokenContractAddress?: Address // VERIFIED (used against underlying-market)
+  since?: number // ms epoch
+  binanceChainId?: string // VERIFIED (string)
 }
 
 export interface CorporateActionsResponse {
   actions: CorporateAction[]
 }
 
-export type MarketState = "open" | "closed" | "pre" | "post" // VERIFY in clocked session
+// Real market state values (VERIFIED): openState(bool) is the reliable field; marketStatus is a
+// string that may be null (e.g. "overnight"), reasonCode is e.g. "TRADING". The union stays open so
+// real values pass through without breaking the "open"/"closed" callers.
+export type MarketState = "open" | "closed" | "pre" | "post" | "overnight" | (string & {})
 
+// getMarketStatus -> GET /api/v1/dex/market/rwa/underlying-market (VERIFIED). Param
+// `tokenContractAddress` (SINGULAR).
 export interface MarketStatusRequest {
   symbol?: string
-  market?: string // e.g. "US_EQUITY"  // VERIFY in clocked session
+  tokenContractAddress?: Address // VERIFIED
+  market?: string // e.g. "US_EQUITY"
+  binanceChainId?: string // VERIFIED
 }
 
 export interface MarketStatusResponse {
   market: string
-  isOpen: boolean
-  state: MarketState
-  nextOpen?: number // ms epoch  // VERIFY in clocked session
-  nextClose?: number // ms epoch  // VERIFY in clocked session
+  isOpen: boolean // MATCHED (name) -> statusInfo.openState
+  state: MarketState // DIFFERED -> statusInfo.marketStatus (nullable) / statusInfo.reasonCode
+  nextOpen?: number // DIFFERED -> statusInfo.nextOpenTime (ms|null)
+  nextClose?: number // DIFFERED -> statusInfo.nextCloseTime (ms|null)
   asOf: number
   note?: string
+  dividendYield?: string // BONUS -> marketData.dividendYield
+  latestDividend?: string // BONUS -> marketData.latestDividend
+}
+
+// Raw rwa/underlying-market data (VERIFIED live shape).
+export interface RwaUnderlyingMarketRaw {
+  binanceChainId: string
+  tokenContractAddress: string
+  platformId: string
+  assetType: number
+  statusInfo: {
+    openState: boolean
+    marketStatus: string | null // e.g. "overnight"
+    reasonCode: string | null // e.g. "TRADING"
+    reasonMsg: string | null
+    nextOpenTime: number | null
+    nextCloseTime: number | null
+  }
+  marketData: {
+    referencePrice: string | null
+    high52W?: string | null
+    low52W?: string | null
+    volumeShares24H?: string | null
+    avgDailyVolume1Y?: string | null
+    totalShares?: string | null
+    marketCap?: string | null
+    turnoverRate?: string | null
+    amplitude?: string | null
+    dividendYield?: string | null
+    latestDividend?: string | null
+    peRatioTTM?: string | null
+    pbRatio?: string | null
+  }
 }
 
 // --- Market -------------------------------------------------------------------
+// getPrice -> POST /api/v1/dex/market/price (VERIFIED). Batch: body is an array of
+// {binanceChainId, tokenContractAddress}, up to 100. Guessed GET-by-symbol was wrong.
 export interface PriceRequest {
   symbol: string
-  binanceChainId?: number // VERIFY in clocked session
+  tokenContractAddress?: Address // preferred; price is keyed by address  // VERIFIED
+  binanceChainId?: string // VERIFIED (string)
 }
 
 export interface PriceResponse {
   symbol: string
-  price: string // decimal string  // VERIFY in clocked session
-  asOf: number
+  price: string // MATCHED -> price (string)
+  asOf: number // DIFFERED -> time (ms epoch)
 }
 
+// Raw market/price row (VERIFIED live shape).
+export interface MarketPriceRowRaw {
+  binanceChainId: string
+  tokenContractAddress: string
+  price: string
+  time: number // ms epoch
+}
+
+// getCandles -> GET /api/v1/dex/market/candles (doc-listed, not probed this pass).
 export interface CandlesRequest {
   symbol: string
-  bar: string // roost hint: `bar` is lowercase, e.g. "1m" / "1h" / "1d"  // VERIFY in clocked session
+  tokenContractAddress?: Address
+  bar: string // e.g. "1m" / "1h" / "1d"
   limit?: number
+  binanceChainId?: string
 }
 
-// roost hint: a candle row is a positional array with the TIMESTAMP at index 5, not index 0.
 export type Candle = readonly [
   open: string,
   high: string,
@@ -111,7 +192,7 @@ export type Candle = readonly [
   close: string,
   volume: string,
   timestamp: number,
-] // VERIFY in clocked session
+]
 
 export interface CandlesResponse {
   symbol: string
@@ -121,77 +202,127 @@ export interface CandlesResponse {
 
 // --- Trading ------------------------------------------------------------------
 export type QuoteSide = "buy" | "sell"
-// roost hint: bStock quotes route through the aggregator, Ondo is an RFQ that refuses without
-// a userWalletAddress.
-export type QuoteProvider = "bstock" | "ondo" // VERIFY in clocked session
+// Our provider label. bStock routes via SWAP (vendorName "LiquidMesh") or RFQ ("PcsXRfq"); Ondo is
+// RFQ. The Http client resolves the token pair and reads the real vendorName + executionMode.
+export type QuoteProvider = "bstock" | "ondo" | string
 
+// getQuote -> GET /api/v1/dex/aggregator/quote (VERIFIED). Address-based, returns an array of routes
+// sorted by toTokenAmount desc, each with its own quoteId (TTL ~30s).
 export interface QuoteRequest {
   symbol: string
   side: QuoteSide
-  amount: string // input amount, decimal string  // VERIFY in clocked session
+  amount: string // input amount, smallest unit (decimal string)  // VERIFIED
+  fromTokenAddress?: Address // VERIFIED (real param)
+  toTokenAddress?: Address // VERIFIED (real param)
   provider?: QuoteProvider
-  userWalletAddress?: Address // required for the Ondo RFQ, ignored by bStock  // VERIFY in clocked session
-  binanceChainId?: number // VERIFY in clocked session
+  userWalletAddress?: Address // VERIFIED (real param)
+  binanceChainId?: string // VERIFIED
 }
 
 export interface QuoteResponse {
   symbol: string
   side: QuoteSide
-  provider: QuoteProvider
-  tokenPrice: string // on-chain token price  // VERIFY in clocked session
-  referencePrice?: string // the derived reference, for the spread read
+  provider: QuoteProvider // DIFFERED -> route.vendorName
+  tokenPrice: string // DIFFERED -> route.toToken/fromToken.tokenUnitPrice
+  referencePrice?: string
   tokenToShareRatio?: string
-  inAmount: string // VERIFY in clocked session
-  outAmount: string // VERIFY in clocked session
-  requestPath?: string // the signed requestPath; carries the `/build` prefix  // VERIFY in clocked session
-  expiresAt?: number // ms epoch
+  inAmount: string // DIFFERED -> route.fromTokenAmount
+  outAmount: string // DIFFERED -> route.toTokenAmount
+  quoteId?: string // VERIFIED -> route.quoteId
+  executionMode?: string // VERIFIED -> "SWAP" | "RFQ"
+  vendorName?: string // VERIFIED -> route.vendorName
+  priceImpactPercent?: string // VERIFIED
+  requestPath?: string // the signed requestPath (carries /build)
+  expiresAt?: number // ms epoch (derived: now + ~30s)
+}
+
+// Raw aggregator quote route (VERIFIED live shape).
+export interface AggregatorQuoteTokenRaw {
+  tokenContractAddress: string
+  tokenSymbol: string
+  tokenUnitPrice: string
+  decimal: string
+  isHoneyPot?: boolean
+  taxRate?: string
+}
+export interface AggregatorQuoteRouteRaw {
+  quoteId: string
+  vendorName: string
+  executionMode: string // "SWAP" | "RFQ"
+  binanceChainId: string
+  fromTokenAmount: string
+  toTokenAmount: string
+  tradeFee?: string
+  estimateGasFee?: string
+  priceImpactPercent?: string
+  router?: string
+  fromToken: AggregatorQuoteTokenRaw
+  toToken: AggregatorQuoteTokenRaw
+  approveTarget?: string
+  isBest?: boolean
 }
 
 // --- Transaction (simulate before send) ---------------------------------------
+// simulateTransaction -> POST /api/v1/dex/pre-transaction/simulate (VERIFIED). Body is
+// {binanceChainId, evmTx:{from,to,data,value}} (or solTx / tronTx by chain family).
 export interface SimulateRequest {
   from: Address
   to: Address
   data: Hex
-  value?: string // wei, decimal string  // VERIFY in clocked session
-  binanceChainId?: number // VERIFY in clocked session
+  value?: string // wei, decimal string  // VERIFIED
+  binanceChainId?: string // VERIFIED
 }
 
 export interface BalanceChange {
-  token: Address
+  token?: Address
   symbol?: string
   decimals?: number
-  before: string
-  after: string
-  delta: string // signed decimal string  // VERIFY in clocked session
+  before?: string
+  after?: string
+  delta?: string
 }
 
 export interface AllowanceChange {
-  token: Address
-  spender: Address
-  before: string
-  after: string
-  delta: string // VERIFY in clocked session
+  token?: Address
+  spender?: Address
+  before?: string
+  after?: string
+  delta?: string
 }
 
 export interface SimulateResponse {
-  success: boolean
-  balanceChanges: BalanceChange[]
-  allowanceChanges: AllowanceChange[]
-  gasUsed?: string
+  success: boolean // DIFFERED -> derived from status === "SUCCESS"
+  status?: string // VERIFIED -> data.status (e.g. "SUCCESS")
+  failReason?: string // VERIFIED -> data.failReason
+  balanceChanges: BalanceChange[] // MATCHED (name)
+  allowanceChanges: AllowanceChange[] // MATCHED (name)
+  gasUsed?: string // DIFFERED -> not returned by simulate; use pre-transaction/gas-limit
   error?: ApiError
 }
 
+// Raw simulate data (VERIFIED wrapper shape; change-array element fields not observed non-empty on
+// the base tier, so mapping stays permissive).
+export interface SimulateResultRaw {
+  status: string
+  failReason?: string
+  balanceChanges?: unknown[]
+  allowanceChanges?: unknown[]
+}
+
 // --- Wallet -------------------------------------------------------------------
+// getBalances -> GET /api/v1/dex/balance/all-token-balances-by-address (VERIFIED). Paginated: the
+// real payload is [{page, pageSize, tokenAssets:[...]}]. NOTE: returned an empty tokenAssets list
+// with code 0 for known-funded addresses on the base tier (see .hq/api-verification.json).
 export interface BalancesRequest {
   address: Address
-  binanceChainId?: number // VERIFY in clocked session
+  binanceChainId?: string // VERIFIED
 }
 
 export interface WalletBalance {
   token: Address
   symbol?: string
   decimals?: number
-  balance: string // raw balance; never cache a bStocks balance (it rebases)
+  balance: string // never cache a bStocks balance (it rebases)
 }
 
 export interface BalancesResponse {
@@ -199,26 +330,35 @@ export interface BalancesResponse {
   balances: WalletBalance[]
 }
 
+// Raw balances page (VERIFIED wrapper shape; tokenAssets element shape unconfirmed on base tier).
+export interface WalletBalancePageRaw {
+  page: number
+  pageSize: number
+  tokenAssets: Array<Record<string, unknown>>
+}
+
 // --- b402 Payments ------------------------------------------------------------
-// x402-style requirement. The amount field is `amount` (x402 v2), NOT `maxAmountRequired`
-// (v1). `decimals` is load-bearing: without it a client cannot turn the atomic `amount` into
-// a human figure (the OKX x402 lesson).
+// getPaymentRequirements is a PAYEE-side x402 construct (the `accepts[]` a resource server returns
+// on HTTP 402), NOT a Binance GET. The real b402 module is an x402 facilitator: /verify and /settle
+// act on a client-built payment, /supported lists networks + assets + schemes. The Http client builds
+// the requirement locally (as the mock does); it never calls /settle (that moves funds). `amount` is
+// x402 v2 `amount` (not v1 maxAmountRequired); `decimals` is load-bearing to price it.
 export interface PaymentRequirements {
-  scheme: string // e.g. "exact"  // VERIFY in clocked session
-  network: string // e.g. "bsc"  // VERIFY in clocked session
-  asset: Address // token contract  // VERIFY in clocked session
-  amount: string // atomic units, decimal string  // VERIFY in clocked session
-  payTo: Address // VERIFY in clocked session
-  maxTimeoutSeconds: number // VERIFY in clocked session
-  decimals: number // asset decimals, needed to price `amount`  // VERIFY in clocked session
-  extra?: Record<string, unknown> // scheme-specific  // VERIFY in clocked session
+  scheme: string // e.g. "exact"
+  network: string // e.g. "bsc"
+  asset: Address // token contract
+  amount: string // atomic units, decimal string
+  payTo: Address
+  maxTimeoutSeconds: number
+  decimals: number // asset decimals, needed to price `amount`
+  extra?: Record<string, unknown>
 }
 
 export interface PaymentRequirementsRequest {
-  resource?: string // the gated resource path  // VERIFY in clocked session
+  resource?: string
   symbol?: string
 }
 
 export interface PaymentRequirementsResponse {
-  accepts: PaymentRequirements[] // x402 returns an `accepts` array  // VERIFY in clocked session
+  accepts: PaymentRequirements[]
 }
