@@ -9,3 +9,7 @@ dist/
 *.tsbuildinfo
 *.log
 .vercel
+
+# demo video render outputs, kept in the lane, never pushed to the code repo
+DEMO-*.mp4
+upload-*/
