@@ -1,0 +1,12 @@
+.hq/
+submit/
+.git/
+node_modules
+**/node_modules
+.next
+**/.next
+.env
+.env.*
+*.tsbuildinfo
+DEMO-*.mp4
+upload-*/
